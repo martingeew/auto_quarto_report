@@ -1,0 +1,85 @@
+---
+title: "Automated Data Report"
+format:
+  html:
+    code-fold: true
+title-block-banner: "#f0f3f5"
+title-block-banner-color: "black"
+author: 
+  name: "Martin Wong"
+date: today
+jupyter: python3
+include-after-body: "footer.html"
+---
+This is a demo site built using Quarto and Python. Check out<br>the 
+full Substack post [here](https://open.substack.com/pub/autonomousecon/p/how-the-pros-showcase-their-data?r=2o1mc&utm_campaign=post&utm_medium=web).
+
+```{python}
+#| echo: false
+from datetime import datetime
+
+# Display last update time
+current_time = datetime.now().strftime("%d-%m-%Y %H:%M")
+print(f"Last updated: {current_time}")
+```
+
+::: {.panel-tabset .nav-pills}
+
+## Daily indicators
+```{python}
+#| output: false
+#| echo: false
+import ffn
+from datetime import datetime
+
+# Retrieve data using ffn
+data = ffn.get("nvda,msft,googl,amzn,aapl,meta", start="2023-01-01")
+
+timestamp = datetime.now().strftime("%Y-%m-%d")
+data.to_csv(f"data/raw/stock_data_{timestamp}.csv")
+
+# Rebase data
+data_rebase = data.rebase()
+
+timestamp = datetime.now().strftime("%Y-%m-%d")
+data_rebase.to_csv(f"data/processed/stock_data_rebased_{timestamp}.csv")
+```
+```{python}
+#| fig-cap: "Source: Yahoo Finance"
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+# Function for generating the Seaborn plot
+def plot_stock_timeseries_seaborn(df):
+    """
+    Creates a Seaborn line plot for all columns in the DataFrame.
+
+    Parameters:
+    df (pd.DataFrame): DataFrame with float columns and DatetimeIndex as index.
+    """
+    # Set Seaborn theme
+    sns.set_theme(style="whitegrid")  # White grid background
+
+    # Initialize the figure
+    fig, ax = plt.subplots(figsize=(8, 5))
+
+    # Add a line for each column
+    for col in df.columns:
+        sns.lineplot(data=df, x=df.index, y=col, linewidth=2.5, label=col, ax=ax)
+
+    # Customize the plot
+    ax.set_title("Tech Stocks Indexed to 2023-01-01=100", fontsize=16, loc='left')
+    ax.set_xlabel("", fontsize=12)
+    ax.set_ylabel("", fontsize=12)
+    ax.legend(fontsize=10, title_fontsize=12)
+    ax.grid(visible=True, linestyle="--", alpha=0.6)
+    for spine in ax.spines.values():
+        spine.set_color("none")
+
+    # Show the plot
+    plt.tight_layout()
+    plt.show()
+
+# Generate the Seaborn plot
+plot_stock_timeseries_seaborn(data_rebase)
+```
