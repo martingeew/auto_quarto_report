@@ -21,12 +21,12 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.x'
+          python-version: '3.14'
 
       # Step 3: Install dependencies
       - name: Install dependencies
         run: |
-          pip install ffn pandas matplotlib seaborn
+          pip install "ffn[yahoo]==1.4.1" pandas matplotlib seaborn
           pip install jupyter notebook nbformat pyyaml ipykernel
 
       # Step 4: Set up Quarto
